@@ -1,73 +1,75 @@
-# Эмулятор давления на ESP32-C3 с BLE
+[English](./README.md) | [Русский](./README.ru.md)
 
-Этот проект превращает плату на базе ESP32-C3 в BLE-периферийное устройство, которое эмулирует датчик давления. Управлять целевым значением давления можно как с помощью физических кнопок на устройстве, так и по Bluetooth Low Energy. Текущее значение давления плавно изменяется и отправляется подключенному клиенту через BLE-уведомления.
+# ESP32-C3 BLE Pressure Emulator
 
-## Основные возможности
+This project turns an ESP32-C3 based board into a BLE peripheral that emulates a pressure sensor. The target pressure value can be controlled both with physical buttons on the device and via Bluetooth Low Energy. The current pressure value changes smoothly and is sent to a connected client via BLE notifications.
 
-- **BLE Сервис:** Создает кастомный BLE-сервис с одной характеристикой для управления и чтения данных.
-- **Эмуляция давления:** Значение давления плавно стремится к целевому значению с использованием фильтра нижних частот, обеспечивая реалистичное изменение.
-- **Двойное управление:**
-  - **Физические кнопки:** Две кнопки для установки положительного (`+50.0`) и отрицательного (`-50.0`) целевого давления.
-  - **BLE-команды:** Отправка команд на запись в характеристику для установки целевого давления.
-- **Обратная связь:**
-  - **BLE-уведомления:** Текущее значение давления (тип `float`, 4 байта) отправляется подписчикам каждые 50 мс.
-  - **Светодиодная индикация:** Светодиоды показывают статус BLE-соединения и текущее направление давления (положительное/отрицательное).
+## Key Features
 
-## Аппаратные компоненты
+- **BLE Service:** Creates a custom BLE service with a single characteristic for control and data reading.
+- **Pressure Emulation:** The pressure value smoothly approaches the target value using a low-pass filter, providing a realistic change.
+- **Dual Control:**
+  - **Physical Buttons:** Two buttons to set positive (`+50.0`) and negative (`-50.0`) target pressures.
+  - **BLE Commands:** Send write commands to the characteristic to set the target pressure.
+- **Feedback:**
+  - **BLE Notifications:** The current pressure value (type `float`, 4 bytes) is sent to subscribers every 50 ms.
+  - **LED Indication:** LEDs show the BLE connection status and the current pressure direction (positive/negative).
 
-- Плата разработки на ESP32-C3 (например, ESP32-C3 Super Mini).
-- 2 тактовые кнопки.
-- 1 RGB-светодиод (или 3 отдельных светодиода: красный, зеленый, синий).
-- Соединительные провода.
+## Hardware Components
 
-## Схема подключения (пины)
+- ESP32-C3 development board (e.g., ESP32-C3 Super Mini).
+- 2 push-buttons.
+- 1 RGB LED (or 3 separate LEDs: red, green, blue).
+- Jumper wires.
 
-| Компонент                                | Пин GPIO |
-| :--------------------------------------- | :------- |
-| Кнопка 1 (положит. давление)             | `GPIO 0` |
-| Кнопка 2 (отрицат. давление)             | `GPIO 1` |
-| Синий светодиод (индикатор подключения)  | `GPIO 2` |
-| Зеленый светодиод (положит. давление)    | `GPIO 3` |
-| Красный светодиод (отрицат. давление)    | `GPIO 4` |
-| Встроенный светодиод (индикатор рекламы) | `GPIO 8` |
+## Pinout
 
-_Примечание: Кнопки должны быть подключены между пином GPIO и землей (GND). В коде используется внутренний подтягивающий резистор (`INPUT_PULLUP`)._
+| Component                           | GPIO Pin |
+| :---------------------------------- | :------- |
+| Button 1 (positive pressure)        | `GPIO 0` |
+| Button 2 (negative pressure)        | `GPIO 1` |
+| Blue LED (connection indicator)     | `GPIO 2` |
+| Green LED (positive pressure)       | `GPIO 3` |
+| Red LED (negative pressure)         | `GPIO 4` |
+| Built-in LED (advertising indicator)| `GPIO 8` |
 
-## Программное обеспечение и библиотеки
+_Note: Buttons should be connected between the GPIO pin and ground (GND). The code uses the internal pull-up resistor (`INPUT_PULLUP`)._
 
-- **Среда разработки:** PlatformIO или Arduino IDE.
-- **Библиотека:** `NimBLE-Arduino` (устанавливается автоматически через PlatformIO согласно `platformio.ini`).
+## Software and Libraries
 
-## Как использовать
+- **Development Environment:** PlatformIO or Arduino IDE.
+- **Library:** `NimBLE-Arduino` (installed automatically via PlatformIO as defined in `platformio.ini`).
 
-### 1. Сборка и прошивка
+## How to Use
 
-1.  Откройте проект в вашей любимой среде (например, VS Code с PlatformIO).
-2.  Скомпилируйте и загрузите прошивку на вашу плату ESP32-C3.
+### 1. Build and Flash
 
-### 2. Взаимодействие по BLE
+1.  Open the project in your favorite IDE (e.g., VS Code with PlatformIO).
+2.  Compile and upload the firmware to your ESP32-C3 board.
 
-1.  Используйте любое приложение для сканирования BLE-устройств (например, **nRF Connect for Mobile**, **LightBlue**).
-2.  Найдите и подключитесь к устройству с именем `C1-Emulator`.
-3.  **UUID Сервиса:** `12345678-1234-1234-1234-123456789abc`
-4.  **UUID Характеристики:** `abcdefab-1234-5678-9abc-abcdefabcdef`
+### 2. Interact via BLE
 
-### 3. Управление устройством
+1.  Use any BLE scanner app (e.g., **nRF Connect for Mobile**, **LightBlue**).
+2.  Find and connect to the device named `C1-Emulator`.
+3.  **Service UUID:** `12345678-1234-1234-1234-123456789abc`
+4.  **Characteristic UUID:** `abcdefab-1234-5678-9abc-abcdefabcdef`
 
-- **Получение данных:**
+### 3. Control the Device
 
-  - В приложении найдите указанную характеристику и подпишитесь на **уведомления (Notifications)**.
-  - Вы начнете получать 4-байтовые значения (little-endian float) текущего давления каждые 50 мс.
+- **Receiving Data:**
+  - In the app, find the specified characteristic and subscribe to **Notifications**.
+  - You will start receiving 4-byte values (little-endian float) of the current pressure every 50 ms.
 
-- **Отправка команд:**
-  - В эту же характеристику отправьте байт в режиме **записи (Write/Write without response)**:
-    - `0x01`: Установить целевое давление `+40.0`. Загорится зеленый светодиод.
-    - `0x02`: Установить целевое давление `-40.0`. Загорится красный светодиод.
-    - `0x00` или `0x03`: Установить целевое давление `0.0`. Красный и зеленый светодиоды погаснут.
+- **Sending Commands:**
+  - Write a byte to the same characteristic using **Write/Write without response**:
+    - `0x01`: Set target pressure to `+40.0`. The green LED will light up.
+    - `0x02`: Set target pressure to `-40.0`. The red LED will light up.
+    - `0x00` or `0x03`: Set target pressure to `0.0`. The red and green LEDs will turn off.
 
-## Логика работы светодиодов
+## LED Logic
 
-- **Встроенный светодиод (GPIO 8):** Мигает, когда устройство находится в режиме рекламы (ожидает подключения). Гаснет после подключения клиента.
-- **Синий светодиод (GPIO 2):** Загорается при успешном подключении BLE-клиента.
-- **Зеленый светодиод (GPIO 3):** Загорается, когда по BLE получена команда на положительное давление.
-- **Красный светодиод (GPIO 4):** Загорается, когда по BLE получена команда на отрицательное давление.
+- **Built-in LED (GPIO 8):** Blinks when the device is in advertising mode (waiting for connection). Turns off after a client connects.
+- **Blue LED (GPIO 2):** Lights up upon a successful BLE client connection.
+- **Green LED (GPIO 3):** Lights up when a command for positive pressure is received via BLE.
+- **Red LED (GPIO 4):** Lights up when a command for negative pressure is received via BLE.
+
